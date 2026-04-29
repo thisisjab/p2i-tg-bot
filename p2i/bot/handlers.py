@@ -71,25 +71,34 @@ async def _process_media(  # noqa: PLR0913
         )
         return
 
-    emoji_map = {"photo": "📸", "voice": "🎙️", "video": "🎬", "document": "📄"}
-
     sent_msg = await chat.send_message(
         f"Uploading {media_type}...", reply_to_message_id=msg.id
     )
 
     # Get file from telegram
-    file = await context.bot.get_file(file_id)
+    try:
+        file = await context.bot.get_file(file_id)
 
-    file_content = BytesIO()
-    await file.download_to_memory(file_content)
-    file_content.seek(0)
+        file_content = BytesIO()
+        await file.download_to_memory(file_content)
+        file_content.seek(0)
+    except Exception as e:
+        logger.exception("couldn't download file from telegram", error=e)
+        await sent_msg.edit_text("Sorry :(\nCouldn't download your file.")
+        return
 
     # Upload to s3
-    storage_service = get_storage_service()
-    obj_key = await storage_service.upload(msg.chat_id, file_name, file_content)
+    try:
+        storage_service = get_storage_service()
+        obj_key = await storage_service.upload(msg.chat_id, file_name, file_content)
+    except Exception as e:
+        logger.exception("couldn't upload file to s3", error=e)
+        await sent_msg.edit_text("Sorry :(\nCouldn't upload your file to storage.")
+        return
 
     # Return URL
     get_url = await storage_service.get_signed_get_url(obj_key)
+    emoji_map = {"photo": "📸", "voice": "🎙️", "video": "🎬", "document": "📄"}
     await sent_msg.edit_text(
         f"{emoji_map.get(media_type, '📎')} Download link:\n{get_url}"
     )
@@ -206,29 +215,33 @@ async def process_text(chat: telegram.Chat, msg: telegram.Message) -> None:
 
     sent_msg = await chat.send_message("Fetching URL...", reply_to_message_id=msg.id)
 
+    # Download file
     try:
         async with httpx.AsyncClient(timeout=30.0) as client:
-            # Download file
             await sent_msg.edit_text("Downloading file...")
 
             response = await client.get(url, follow_redirects=True)
             response.raise_for_status()
-
-            # Upload to s3
-            await sent_msg.edit_text("Uploading to bucket...")
-
-            storage_service = get_storage_service()
-            obj_key = await storage_service.upload(
-                chat.id, f"webpage_{msg.message_id}.html", response.content
-            )
-
-            # Get url
-            get_url = await storage_service.get_signed_get_url(obj_key)
-
-            await sent_msg.edit_text(f"🔗 Download link:\n{get_url}")
     except Exception as e:
-        logger.exception("couldn't download file", error=e)
-        await sent_msg.edit_text("Couldn't download file.")
+        logger.exception("couldn't fetch url", url=url, error=e)
+        await sent_msg.edit_text("Sorry :(\nCouldn't download your file.")
+        return
+
+    # Upload to s3
+    try:
+        await sent_msg.edit_text("Uploading to bucket...")
+
+        storage_service = get_storage_service()
+        obj_key = await storage_service.upload(
+            chat.id, f"webpage_{msg.message_id}.html", response.content
+        )
+    except Exception as e:
+        logger.exception("couldn't upload file to storage", error=e)
+        await sent_msg.edit_text("Sorry :(\nCouldn't upload your file to stroage..")
+
+    # Get url
+    get_url = await storage_service.get_signed_get_url(obj_key)
+    await sent_msg.edit_text(f"🔗 Download link:\n{get_url}")
 
 
 async def user_input_handler(
