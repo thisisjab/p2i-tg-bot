@@ -1,0 +1,20 @@
+[project]
+name = "p2i-tg-bot"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "aioboto3>=15.5.0",
+    "minio>=7.2.20",
+    "pydantic>=2.13.3",
+    "pydantic-settings>=2.14.0",
+    "python-telegram-bot>=22.7",
+    "structlog>=25.5.0",
+]
+
+[dependency-groups]
+dev = [
+    "pre-commit>=4.6.0",
+    "ruff>=0.15.12",
+]
