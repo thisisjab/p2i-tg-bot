@@ -1,7 +1,7 @@
 from minio import Minio
 
-from p2i.config import settings
-from p2i.storage.service import StorageService
+from ftobb.config import settings
+from ftobb.storage.service import StorageService
 
 __storage_service: StorageService | None = None
 

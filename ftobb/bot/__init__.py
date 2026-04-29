@@ -8,8 +8,8 @@ from telegram.ext import (
     filters,
 )
 
-from p2i.bot import handlers
-from p2i.config import settings
+from ftobb.bot import handlers
+from ftobb.config import settings
 
 logger = structlog.getLogger(__name__)
 

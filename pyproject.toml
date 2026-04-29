@@ -1,7 +1,7 @@
 [project]
-name = "p2i-tg-bot"
+name = "ftobb"
 version = "0.1.0"
-description = "Add your description here"
+description = "A tiny telegram bot to upload files from telegram to buckets."
 readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [

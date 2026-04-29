@@ -7,8 +7,8 @@ from telegram.ext import (
     ContextTypes,
 )
 
-from p2i.config import settings
-from p2i.storage.deps import get_storage_service
+from ftobb.config import settings
+from ftobb.storage.deps import get_storage_service
 
 logger = structlog.getLogger(__name__)
 
