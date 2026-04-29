@@ -1,0 +1,8 @@
+services:
+  tgbot:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: tgbot
+    env_file: './.env'
+    restart: on-failure

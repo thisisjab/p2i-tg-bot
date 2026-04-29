@@ -1,0 +1,75 @@
+# Virtual environments
+.venv
+venv
+env
+.env
+.venv/*
+
+# Python cache
+**/__pycache__
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+
+# Version control
+.git
+.gitignore
+.gitattributes
+
+# Ruff cache
+.ruff_cache
+.ruff_cache/*
+
+# Docker
+Dockerfile
+.dockerignore
+docker-compose*.yml
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# Testing
+.pytest_cache
+.coverage
+htmlcov
+.tox
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Build artifacts
+dist/
+build/
+*.egg-info/
+*.egg
+
+# Logs
+*.log
+logs/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Documentation (unless needed in image)
+README.md
+docs/
+*.md
+
+# CI/CD
+.github/
+.gitlab/
+.ci/
+
+# Misc
+*.db
+*.sqlite3
+*.pid
+.pre-commit-config.yaml
