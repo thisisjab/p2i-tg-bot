@@ -1,0 +1,51 @@
+name: Deploy to Server
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Install sshpass
+        run: sudo apt-get update && sudo apt-get install -y sshpass
+
+      - name: Deploy to server
+        env:
+          SERVER_IP: ${{ secrets.SERVER_IP }}
+          SERVER_USER: ${{ secrets.SERVER_USER }}
+          SERVER_PASSWORD: ${{ secrets.SERVER_PASSWORD }}
+          PROJECT_PATH: ${{ secrets.PROJECT_PATH }}
+          ENV_CONTENTS: ${{ secrets.ENV }}
+          GIT_REPO_URL: ${{ secrets.GIT_REPO_URL }}
+        run: |
+          sshpass -p "$SERVER_PASSWORD" ssh -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "
+            # Clone if project doesn't exist
+            if [ ! -d \"$PROJECT_PATH/.git\" ]; then
+              echo \"Cloning repository...\"
+              mkdir -p \"$PROJECT_PATH\"
+              git clone \"$GIT_REPO_URL\" \"$PROJECT_PATH\"
+            fi
+
+            cd \"$PROJECT_PATH\" || exit 1
+
+            echo \"Pulling latest changes...\"
+            git pull origin main --rebase
+
+            echo \"Writing .env file...\"
+            cat > .env << 'ENVEOF'
+            $ENV_CONTENTS
+            ENVEOF
+
+            echo \"Starting Docker containers...\"
+            docker compose up --build -d
+
+            echo \"Cleaning up old images...\"
+            docker image prune -f
+
+            echo \"Deployment complete!\"
+            docker compose ps
+          "
